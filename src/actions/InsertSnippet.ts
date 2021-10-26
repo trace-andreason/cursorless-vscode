@@ -123,7 +123,7 @@ function formatSubstitutions(
   substitutions: Record<string, string>
 ) {
   return Object.fromEntries(
-    Object.entries(substitutions ?? {}).map(([variableName, value]) => {
+    Object.entries(substitutions).map(([variableName, value]) => {
       const formatterName =
         (definition.variables ?? {})[variableName]?.formatter ??
         (snippet.variables ?? {})[variableName]?.formatter;
