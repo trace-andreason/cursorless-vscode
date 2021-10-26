@@ -9,7 +9,7 @@ const textFormatters: Record<TextFormatterName, TextFormatter> = {
 
     const [first, ...rest] = tokens;
 
-    return first + rest.map(capitalizeToken);
+    return first + rest.map(capitalizeToken).join("");
   },
 
   snakeCase(tokens: string[]) {
