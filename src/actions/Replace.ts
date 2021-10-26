@@ -13,8 +13,10 @@ import { performEditsAndUpdateSelections } from "../util/updateSelections";
 
 type RangeGenerator = { start: number };
 
-export default class implements Action {
-  getTargetPreferences: () => ActionPreferences[] = () => [{ insideOutsideType: null }];
+export default class Replace implements Action {
+  getTargetPreferences: () => ActionPreferences[] = () => [
+    { insideOutsideType: null },
+  ];
 
   constructor(private graph: Graph) {
     this.run = this.run.bind(this);

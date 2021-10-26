@@ -300,6 +300,7 @@ export type ActionType =
   | "insertEmptyLineAfter"
   | "insertEmptyLineBefore"
   | "insertEmptyLinesAround"
+  | "insertSnippet"
   | "moveToTarget"
   | "outdentLine"
   | "pasteFromClipboard"
@@ -365,3 +366,5 @@ export interface Edit {
   dontMoveOnEqualStart?: boolean;
   extendOnEqualEmptyRange?: boolean;
 }
+
+export type TextFormatterName = "camelCase" | "pascalCase" | "snakeCase";
