@@ -29,6 +29,7 @@ import { Sort, Reverse } from "./Sort";
 import Call from "./Call";
 import WrapWithSnippet from "./WrapWithSnippet";
 import InsertSnippet from "./InsertSnippet";
+import GenerateSnippet from "./GenerateSnippet";
 
 class Actions implements ActionRecord {
   constructor(private graph: Graph) {}
@@ -42,6 +43,7 @@ class Actions implements ActionRecord {
   extractVariable = new ExtractVariable(this.graph);
   findInWorkspace = new FindInFiles(this.graph);
   foldRegion = new Fold(this.graph);
+  generateSnippet = new GenerateSnippet(this.graph);
   getText = new GetText(this.graph);
   indentLine = new IndentLines(this.graph);
   insertCopyAfter = new CopyLinesDown(this.graph);
