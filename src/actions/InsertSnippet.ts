@@ -93,6 +93,7 @@ export default class InsertSnippet implements Action {
     );
 
     // TODO: Fix "insert before" once we have the new update selections code
+    // TODO: Remove undo stop once we have the new update selections code
     await this.graph.actions.setSelection.run([targets]);
 
     // NB: We do this to auto insert the delimiter if necessary
