@@ -150,7 +150,8 @@ export default class GenerateSnippet implements Action {
     const snippetText = substituter.makeSubstitutions(
       JSON.stringify(snippet, null, 2)
     );
-    console.log(snippetText);
+    console.debug(snippetText);
+
     const userSnippetsDir = workspace
       .getConfiguration("cursorless.experimental")
       .get<string>("snippetsDir");
@@ -162,7 +163,8 @@ export default class GenerateSnippet implements Action {
     const path = join(userSnippetsDir, `${snippetName}.cursorless-snippets`);
     await touch(path);
     const snippetDoc = await workspace.openTextDocument(path);
-    const snippetEditor = await window.showTextDocument(snippetDoc);
+    await window.showTextDocument(snippetDoc);
+
     commands.executeCommand("editor.action.insertSnippet", {
       snippet: snippetText,
     });
