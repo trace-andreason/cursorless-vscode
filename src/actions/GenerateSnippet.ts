@@ -10,7 +10,7 @@ import { range, repeat, zip } from "lodash";
 import displayPendingEditDecorations from "../util/editDisplayUtils";
 import { performEditsAndUpdateSelections } from "../util/updateSelections";
 import { performDocumentEdits } from "../util/performDocumentEdits";
-import { SnippetString, window, workspace } from "vscode";
+import { commands, SnippetString, window, workspace } from "vscode";
 import { join } from "path";
 import { open } from "fs/promises";
 
@@ -30,6 +30,11 @@ export default class GenerateSnippet implements Action {
     const target = ensureSingleTarget(targets);
     const editor = target.selection.editor;
 
+    // NB: We don't await the pending edit decoration so that if they
+    // immediately start saying the name of the snippet, we're more likely to
+    // win the race and have the input box ready for them
+    displayPendingEditDecorations(targets, this.graph.editStyles.referenced);
+
     if (snippetName == null) {
       snippetName = await window.showInputBox({
         prompt: "Name of snippet",
@@ -41,11 +46,6 @@ export default class GenerateSnippet implements Action {
       return {};
     }
 
-    await displayPendingEditDecorations(
-      targets,
-      this.graph.editStyles.referenced
-    );
-
     let placeholderIndex = 1;
 
     const originalSelections = editor.selections.filter(
@@ -56,15 +56,22 @@ export default class GenerateSnippet implements Action {
       editor.document.getText(selection)
     );
 
+    const variables = range(originalSelections.length).map((index) => ({
+      value: `variable${index + 1}`,
+      index: placeholderIndex++,
+    }));
+
     const substituter = new Substituter();
 
     const [placeholderRanges, [targetSelection]] =
       await performEditsAndUpdateSelections(
         editor,
-        originalSelections.map((selection) => ({
+        originalSelections.map((selection, index) => ({
           editor,
           range: selection,
-          text: substituter.addSubstitution(`\\$$${placeholderIndex++}`),
+          text: substituter.addSubstitution(
+            `\\$\${${variables[index].index}:${variables[index].value}}`
+          ),
         })),
         [originalSelections, [target.selection.selection]]
       );
@@ -134,7 +141,7 @@ export default class GenerateSnippet implements Action {
             ? undefined
             : Object.fromEntries(
                 range(originalSelections.length).map((index) => [
-                  `$${index + 1}`,
+                  `$${variables[index].index}`,
                   substituter.addSubstitution(`{$${placeholderIndex++}}`, true),
                 ])
               ),
@@ -156,7 +163,9 @@ export default class GenerateSnippet implements Action {
     await touch(path);
     const snippetDoc = await workspace.openTextDocument(path);
     const snippetEditor = await window.showTextDocument(snippetDoc);
-    snippetEditor.insertSnippet(new SnippetString(snippetText));
+    commands.executeCommand("editor.action.insertSnippet", {
+      snippet: snippetText,
+    });
 
     return {
       thatMark: targets.map((target) => target.selection),
