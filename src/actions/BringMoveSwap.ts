@@ -11,9 +11,13 @@ import update from "immutability-helper";
 import displayPendingEditDecorations from "../util/editDisplayUtils";
 import { performOutsideAdjustment } from "../util/performInsideOutsideAdjustment";
 import { flatten, zip } from "lodash";
-import { Selection, TextEditor, Range } from "vscode";
-import { performEditsAndUpdateSelections } from "../util/updateSelections";
+import { Selection, TextEditor, Range, DecorationRangeBehavior } from "vscode";
+
 import { getTextWithPossibleDelimiter } from "../util/getTextWithPossibleDelimiter";
+import {
+  getSelectionInfo,
+  performEditsAndUpdateFullSelectionInfos,
+} from "../core/updateSelections/updateSelections";
 
 type ActionType = "bring" | "move" | "swap";
 
@@ -104,7 +108,6 @@ class BringMoveSwap implements Action {
           editor: destination.selection.editor,
           originalSelection: destination,
           isSource: false,
-          extendOnEqualEmptyRange: true,
         },
       ];
 
@@ -134,7 +137,6 @@ class BringMoveSwap implements Action {
           editor: source.selection.editor,
           originalSelection: source,
           isSource: true,
-          extendOnEqualEmptyRange: true,
         });
       }
 
@@ -156,10 +158,21 @@ class BringMoveSwap implements Action {
               ? edits
               : edits.filter(({ isSource }) => !isSource);
 
+          const selectionInfos = edits.map(({ originalSelection }) =>
+            getSelectionInfo(
+              editor.document,
+              originalSelection.selection.selection,
+              DecorationRangeBehavior.OpenOpen
+            )
+          );
+
           const [updatedSelections]: Selection[][] =
-            await performEditsAndUpdateSelections(editor, filteredEdits, [
-              edits.map((edit) => edit.originalSelection.selection.selection),
-            ]);
+            await performEditsAndUpdateFullSelectionInfos(
+              this.graph.rangeUpdater,
+              editor,
+              filteredEdits,
+              [selectionInfos]
+            );
 
           return edits.map((edit, index) => {
             const selection = updatedSelections[index];

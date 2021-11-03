@@ -9,7 +9,7 @@ import displayPendingEditDecorations from "../util/editDisplayUtils";
 import { runForEachEditor } from "../util/targetUtils";
 import { flatten, zip } from "lodash";
 import { maybeAddDelimiter } from "../util/getTextWithPossibleDelimiter";
-import { performEditsAndUpdateSelections } from "../util/updateSelections";
+import { performEditsAndUpdateSelections } from "../core/updateSelections/updateSelections";
 
 type RangeGenerator = { start: number };
 
@@ -67,6 +67,7 @@ export default class Replace implements Action {
         (edit) => edit.editor,
         async (editor, edits) => {
           const [updatedSelections] = await performEditsAndUpdateSelections(
+            this.graph.rangeUpdater,
             editor,
             edits,
             [targets.map((target) => target.selection.selection)]
