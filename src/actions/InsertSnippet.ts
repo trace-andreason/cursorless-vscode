@@ -8,7 +8,6 @@ import {
 } from "../typings/Types";
 import displayPendingEditDecorations from "../util/editDisplayUtils";
 import { ensureSingleEditor } from "../util/targetUtils";
-import { callFunctionAndUpdateSelections } from "../util/updateSelections";
 import { SnippetParser } from "../vendor/snippet/snippetParser";
 import {
   findMatchingSnippetDefinition,
@@ -17,6 +16,7 @@ import {
 import { mapValues } from "lodash";
 import textFormatters from "../core/textFormatters";
 import { SnippetDefinition, Snippet } from "../typings/snippet";
+import { callFunctionAndUpdateSelections } from "../core/updateSelections/updateSelections";
 
 export default class InsertSnippet implements Action {
   private snippetParser = new SnippetParser();
@@ -102,11 +102,12 @@ export default class InsertSnippet implements Action {
     // NB: We used the command "editor.action.insertSnippet" instead of calling editor.insertSnippet
     // because the latter doesn't support special variables like CLIPBOARD
     const [updatedTargetSelections] = await callFunctionAndUpdateSelections(
+      this.graph.rangeUpdater,
       () =>
         commands.executeCommand("editor.action.insertSnippet", {
           snippet: snippetString,
         }),
-      editor,
+      editor.document,
       [targetSelections]
     );
 
