@@ -1,4 +1,4 @@
-import { commands } from "vscode";
+import { commands, DecorationRangeBehavior } from "vscode";
 import {
   Action,
   ActionPreferences,
@@ -13,10 +13,13 @@ import {
   findMatchingSnippetDefinition,
   transformSnippetVariables,
 } from "../util/snippet";
-import { mapValues } from "lodash";
 import textFormatters from "../core/textFormatters";
 import { SnippetDefinition, Snippet } from "../typings/snippet";
-import { callFunctionAndUpdateSelections } from "../core/updateSelections/updateSelections";
+import {
+  callFunctionAndUpdateSelectionInfos,
+  callFunctionAndUpdateSelections,
+  getSelectionInfo,
+} from "../core/updateSelections/updateSelections";
 
 export default class InsertSnippet implements Action {
   private snippetParser = new SnippetParser();
@@ -99,16 +102,24 @@ export default class InsertSnippet implements Action {
     // NB: We do this to auto insert the delimiter if necessary
     await this.graph.actions.replace.run([targets], [""]);
 
+    const targetSelectionInfos = targetSelections.map((selection) =>
+      getSelectionInfo(
+        editor.document,
+        selection,
+        DecorationRangeBehavior.OpenOpen
+      )
+    );
+
     // NB: We used the command "editor.action.insertSnippet" instead of calling editor.insertSnippet
     // because the latter doesn't support special variables like CLIPBOARD
-    const [updatedTargetSelections] = await callFunctionAndUpdateSelections(
+    const [updatedTargetSelections] = await callFunctionAndUpdateSelectionInfos(
       this.graph.rangeUpdater,
       () =>
         commands.executeCommand("editor.action.insertSnippet", {
           snippet: snippetString,
         }),
       editor.document,
-      [targetSelections]
+      [targetSelectionInfos]
     );
 
     return {
