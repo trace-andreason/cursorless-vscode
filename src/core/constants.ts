@@ -2,7 +2,7 @@ export const CURSORLESS_SNIPPETS_SUFFIX = ".cursorless-snippets";
 
 export const SUBWORD_MATCHER = /[A-Z]?[a-z]+|[A-Z]+(?![a-z])|[0-9]+/g;
 
-export const DEBOUNCE_DELAY = 175;
+export const DECORATION_DEBOUNCE_DELAY = 175;
 
 export const HAT_COLORS = [
   "default",
