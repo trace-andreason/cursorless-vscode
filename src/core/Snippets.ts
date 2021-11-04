@@ -84,9 +84,22 @@ export class Snippets {
    * @returns Boolean indicating whether path has changed
    */
   private updateUserSnippetsPath(): boolean {
-    const newUserSnippetsDir = workspace
-      .getConfiguration("cursorless.experimental")
-      .get<string>("snippetsDir");
+    let newUserSnippetsDir: string | undefined;
+
+    if (process.env.CURSORLESS_TEST != null) {
+      newUserSnippetsDir = join(
+        this.graph.extensionContext.extensionPath,
+        "src",
+        "test",
+        "suite",
+        "fixtures",
+        "cursorless-snippets"
+      );
+    } else {
+      newUserSnippetsDir = workspace
+        .getConfiguration("cursorless.experimental")
+        .get<string>("snippetsDir");
+    }
 
     if (newUserSnippetsDir === this.userSnippetsDir) {
       return false;
